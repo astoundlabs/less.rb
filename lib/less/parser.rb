@@ -100,13 +100,26 @@ module Less
     # Copies over `error`'s message and backtrace
     # @param [V8::JSError] error native error
     def initialize(error)
-      super(error.message)
-      @backtrace = error.backtrace
+      @line = error.value.line if error.value.respond_to? :line
+      @filename = error.value.filename if error.value.respond_to? :filename
+      @message = error.message
+      
+      super(self.full_message)
+      
+      @backtrace = error.backtrace      
     end
 
     # @return [Array] the backtrace frames
     def backtrace
       @backtrace
+    end
+
+    def full_message
+      if @line && @filename
+        "Error at #{@filename}:#{@line} - #{@message}"
+      else
+        @message
+      end
     end
   end
 end
